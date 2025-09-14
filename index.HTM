@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiveshwar Sharma | Photography</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Custom CSS for advanced effects -->
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a; /* Fallback */
+            background-image: radial-gradient(circle at top, #1a1a1a, #0a0a0a);
+            color: #e5e7eb;
+            /* Hide the default scrollbar */
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        body::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+
+        /* --- Custom Cursor --- */
+        .cursor {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s cubic-bezier(0.19, 1, 0.22, 1), background-color 0.3s ease, border-color 0.3s ease, width 0.3s ease, height 0.3s ease;
+        }
+        .cursor-dot {
+            left: -3px;
+            top: -3px;
+            width: 6px;
+            height: 6px;
+            background-color: #fff;
+        }
+        .cursor-outline {
+            left: -15px;
+            top: -15px;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #fff;
+        }
+        /* Cursor hover effect */
+        body[data-cursor-hover="true"] .cursor-outline {
+            transform: scale(2.5);
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: transparent;
+        }
+        body[data-cursor-hover="true"] .gallery-card,
+        body[data-cursor-hover="true"] .slider-handle {
+            cursor: pointer;
+        }
+
+
+        /* --- Magnetic Button Effect --- */
+        .magnetic-button {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        
+        /* Glassmorphism effect for the header */
+        .glass-header {
+            background-color: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Animation for elements fading in on scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Before/After Slider Section --- */
+        .comparison-container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            margin: auto;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            user-select: none; /* Prevent text selection during drag */
+        }
+        .comparison-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .after-image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .after-image-container img {
+             min-width: 100%; /* Ensure the image inside can be seen */
+             height: 100%;
+             object-fit: cover;
+             object-position: left;
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: translateX(-50%);
+            cursor: ew-resize;
+            z-index: 10;
+        }
+        .slider-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(10, 10, 10, 0.5);
+        }
+
+
+        /* --- 3D Card Stack Gallery --- */
+        .gallery-category {
+            margin-bottom: 6rem; /* Space between categories */
+        }
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #9ca3af;
+        }
+        .card-stack-container {
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            height: 50vh;
+            margin: auto;
+            cursor: pointer;
+            perspective: 1200px; /* Crucial for 3D effect */
+        }
+        
+        .gallery-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease;
+            transform-style: preserve-3d;
+            opacity: 0; /* All cards hidden by default */
+        }
+        
+        /* Define positions for the cards */
+        .gallery-card.active {
+            opacity: 1;
+            z-index: 3;
+            transform: translateZ(0) rotateY(0deg);
+        }
+        .gallery-card.next {
+            opacity: 1;
+            z-index: 2;
+            transform: translateX(35%) translateZ(-150px) rotateY(-25deg) scale(0.9);
+        }
+        .gallery-card.prev {
+            opacity: 1;
+            z-index: 1;
+            transform: translateX(-35%) translateZ(-150px) rotateY(25deg) scale(0.9);
+        }
+
+        /* Enhanced hover effect */
+        .card-stack-container:hover .gallery-card.active {
+            transform: translateZ(20px) scale(1.05); /* Bring active card forward */
+        }
+        .card-stack-container:hover .gallery-card.next {
+            transform: translateX(45%) translateZ(-150px) rotateY(-25deg) scale(0.9); /* Push side cards out */
+        }
+        .card-stack-container:hover .gallery-card.prev {
+            transform: translateX(-45%) translateZ(-150px) rotateY(25deg) scale(0.9);
+        }
+
+        /* --- Particle Canvas Background --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind all content */
+        }
+
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- Dynamic Particle Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Custom Cursor -->
+    <div class="cursor cursor-dot"></div>
+    <div class="cursor cursor-outline"></div>
+
+    <!-- Header & Navigation -->
+    <header class="glass-header sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-black tracking-tighter text-white magnetic-button">SS.</a>
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#about" class="text-gray-300 hover:text-white transition duration-300 magnetic-button">About</a>
+                <a href="#gear" class="text-gray-300 hover:text-white transition duration-300 magnetic-button">My Gear</a>
+                <a href="#edit" class="text-gray-300 hover:text-white transition duration-300 magnetic-button">Editing</a>
+                <a href="#gallery" class="text-gray-300 hover:text-white transition duration-300 magnetic-button">Gallery</a>
+            </div>
+            <a href="#gallery" class="bg-white text-black font-bold py-2 px-5 rounded-full hover:bg-gray-200 transition duration-300 text-sm magnetic-button">View Work</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Section 1: Hero / Introduction -->
+        <section id="about" class="min-h-screen flex items-center justify-center py-20 relative overflow-hidden">
+            <div class="container mx-auto px-6 text-center reveal">
+                <img src="https://placehold.co/150x150/1f2937/e5e7eb?text=SS" alt="Photographer Shiveshwar Sharma" class="w-36 h-36 rounded-full mx-auto mb-6 border-4 border-gray-700 shadow-lg">
+                <h1 class="text-5xl md:text-8xl font-black text-white leading-tight mb-4 tracking-tighter">Shiveshwar Sharma</h1>
+                <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+                    Capturing the world through my lens, one frame at a time. I find beauty in the fleeting moments, turning them into timeless stories. Welcome to my gallery.
+                </p>
+                <div class="flex justify-center items-center space-x-6">
+                    <a href="https://www.instagram.com/winsomeclick/" target="_blank" class="text-gray-400 hover:text-white transition duration-300 magnetic-button" title="@winsomeclick">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.024.06 1.378.06 3.808s-.012 2.784-.06 3.808c-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.024.048-1.378.06-3.808.06s-2.784-.012-3.808-.06c-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.048-1.024-.06-1.378-.06-3.808s.012-2.784.06-3.808c.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 016.343 2.525c.636-.247 1.363-.416 2.427-.465C9.792 2.013 10.146 2 12.315 2zM8 12a4 4 0 118 0 4 4 0 01-8 0zm4-2.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM17.5 6.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd" /></svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: My Gear -->
+        <section id="gear" class="py-32 bg-[#111111]">
+            <div class="container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center reveal">
+                <div class="text-center md:text-left">
+                    <h2 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">My Camera</h2>
+                    <p class="text-2xl font-bold text-gray-300 mb-2">Nikon Z50</p>
+                    <p class="text-gray-400 max-w-lg mx-auto md:mx-0">
+                        My creative partner is the Nikon Z50. Paired with its versatile kit lens, it allows me to be agile and capture stunningly sharp images with beautiful colors, whether I'm deep in the wilderness or in a portrait session.
+                    </p>
+                </div>
+                <div>
+                    <img src="images/CAMERA.jpg" alt="Nikon Z50 Camera" class="rounded-2xl shadow-2xl mx-auto transform hover:scale-105 transition-transform duration-500">
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Before & After Slider -->
+        <section id="edit" class="py-32">
+            <div class="container mx-auto px-6 text-center mb-16 reveal">
+                <h2 class="text-5xl md:text-6xl font-black text-white mb-4 tracking-tighter">The Art of the Edit</h2>
+                <p class="text-lg text-gray-400">Slide to see the transformation from raw to edited.</p>
+            </div>
+            <div class="comparison-container reveal">
+                <img src="images/sliderraw.jpg" alt="Before editing" class="before-image">
+                <div class="after-image-container">
+                    <img src="images/slider.jpg" alt="After editing">
+                </div>
+                <div class="slider-handle"></div>
+            </div>
+        </section>
+
+
+        <!-- Section 4: Gallery -->
+        <section id="gallery" class="py-20 overflow-hidden">
+            <div class="container mx-auto px-6 text-center mb-16 reveal">
+                <h2 class="text-5xl md:text-6xl font-black text-white mb-4 tracking-tighter">Gallery</h2>
+                <p class="text-lg text-gray-400">A curated collection of my recent work.</p>
+            </div>
+
+            <!-- Portraiture Category -->
+            <div class="gallery-category">
+                <h3 class="category-title">Portraiture</h3>
+                <div class="card-stack-container">
+                    <div class="gallery-card" style="background-image: url('images/Portraiture.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Portraiture%20(2).jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Portraiture%20(3).jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Portraiture%20(4).jpg')"></div>
+                </div>
+            </div>
+
+            <!-- Wildlife & Nature Category -->
+             <div class="gallery-category">
+                <h3 class="category-title">Wildlife & Nature</h3>
+                 <div class="card-stack-container">
+                    <div class="gallery-card" style="background-image: url('images/Wildlife%20&%20Nature%201.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Wildlife%20&%20Nature%202.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Wildlife%20&%20Nature%203.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Wildlife%20&%20Nature%204.jpg')"></div>
+                </div>
+            </div>
+            
+            <!-- Framing & Composition Category -->
+            <div class="gallery-category">
+                <h3 class="category-title">Framing & Composition</h3>
+                <div class="card-stack-container">
+                    <div class="gallery-card" style="background-image: url('images/Framing%20&%20Composition.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Framing%20&%20Composition%202.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Framing%20&%20Composition%203.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Framing%20&%20Composition%204.jpg')"></div>
+                </div>
+            </div>
+
+            <!-- Urban & Architectural Elements Category -->
+            <div class="gallery-category">
+                <h3 class="category-title">Urban & Architectural Elements</h3>
+                <div class="card-stack-container">
+                    <div class="gallery-card" style="background-image: url('images/Urban%20&%20Architectural%20Elements.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Urban%20&%20Architectural%20Elements%20(2).jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Urban%20&%20Architectural%20Elements%20(3).jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Urban%20&%20Architectural%20Elements.jpg')"></div>
+                </div>
+            </div>
+            
+            <!-- Celestial & Night Photography Category -->
+            <div class="gallery-category">
+                <h3 class="category-title">Celestial & Night Photography</h3>
+                <div class="card-stack-container">
+                    <div class="gallery-card" style="background-image: url('images/Celestial%20&%20Night%20Photography.jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Celestial%20&%20Night%20Photography%20(2).jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Celestial%20&%20Night%20Photography%20(3).jpg')"></div>
+                    <div class="gallery-card" style="background-image: url('images/Celestial%20&%20Night%20Photography.jpg')"></div>
+                </div>
+            </div>
+
+
+            <div class="text-center mt-16">
+                 <a href="https://drive.google.com/drive/folders/1ezBpx9roU1BFDKOjR_mD99sJwLJqRZlv?usp=drive_link" target="_blank" class="text-blue-400 hover:text-blue-300 transition duration-300 magnetic-button">View All Collections (Drive) &rarr;</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#111111] py-12">
+        <div class="container mx-auto px-6 text-center text-gray-500">
+            <p>&copy; 2024 Shiveshwar Sharma. All Rights Reserved.</p>
+            <p>Designed to Impress.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for all animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. REVEAL ON SCROLL ---
+            const revealElements = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+            revealElements.forEach(el => observer.observe(el));
+
+            // --- 2. CUSTOM CURSOR ---
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: 'forwards' });
+            });
+            // Add hover effect for links and magnetic buttons
+            const hoverables = document.querySelectorAll('a, .magnetic-button, .card-stack-container, .slider-handle');
+            hoverables.forEach(el => {
+                el.addEventListener('mouseover', () => document.body.setAttribute('data-cursor-hover', 'true'));
+                el.addEventListener('mouseout', () => document.body.removeAttribute('data-cursor-hover'));
+            });
+
+            // --- 3. MAGNETIC BUTTONS ---
+            const magneticButtons = document.querySelectorAll('.magnetic-button');
+            magneticButtons.forEach(button => {
+                button.addEventListener('mousemove', function(e) {
+                    const { offsetX, offsetY, target } = e;
+                    const { clientWidth, clientHeight } = target;
+                    const x = (offsetX / clientWidth) - 0.5;
+                    const y = (offsetY / clientHeight) - 0.5;
+                    target.style.transform = `translate(${x * 20}px, ${y * 20}px) rotate3d(${y * -1}, ${x}, 0, 10deg)`;
+                });
+                button.addEventListener('mouseleave', function(e) {
+                    e.target.style.transform = '';
+                });
+            });
+            
+            // --- 4. BEFORE/AFTER SLIDER ---
+            const sliderContainer = document.querySelector('.comparison-container');
+            if (sliderContainer) {
+                const afterImage = sliderContainer.querySelector('.after-image-container');
+                const handle = sliderContainer.querySelector('.slider-handle');
+                let isDragging = false;
+                
+                const moveSlider = (x) => {
+                    const rect = sliderContainer.getBoundingClientRect();
+                    let position = ((x - rect.left) / rect.width) * 100;
+                    position = Math.max(0, Math.min(100, position)); // Clamp between 0 and 100
+                    
+                    afterImage.style.width = `${position}%`;
+                    handle.style.left = `${position}%`;
+                };
+
+                handle.addEventListener('mousedown', () => isDragging = true);
+                handle.addEventListener('touchstart', () => isDragging = true);
+                
+                window.addEventListener('mouseup', () => isDragging = false);
+                window.addEventListener('touchend', () => isDragging = false);
+                
+                window.addEventListener('mousemove', (e) => {
+                    if (isDragging) moveSlider(e.clientX);
+                });
+                window.addEventListener('touchmove', (e) => {
+                    if (isDragging) moveSlider(e.touches[0].clientX);
+                });
+            }
+
+
+            // --- 5. 3D AUTOMATIC CARD STACK GALLERY ---
+            const stackContainers = document.querySelectorAll('.card-stack-container');
+            
+            stackContainers.forEach(container => {
+                const cards = container.querySelectorAll('.gallery-card');
+                if (cards.length === 0) return;
+
+                let currentIndex = 0;
+                let intervalId = null;
+
+                const updateCardClasses = () => {
+                    cards.forEach(card => card.classList.remove('active', 'prev', 'next'));
+                    
+                    const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
+                    const nextIndex = (currentIndex + 1) % cards.length;
+
+                    if (cards[currentIndex]) cards[currentIndex].classList.add('active');
+                    if (cards[prevIndex]) cards[prevIndex].classList.add('prev');
+                    if (cards[nextIndex]) cards[nextIndex].classList.add('next');
+                };
+
+                const cycleCards = () => {
+                    currentIndex = (currentIndex + 1) % cards.length;
+                    updateCardClasses();
+                };
+
+                const startCycle = () => {
+                    stopCycle(); // Clear any existing interval
+                    updateCardClasses(); // Set initial classes
+                    intervalId = setInterval(cycleCards, 2000); // Change card every 2 seconds
+                };
+
+                const stopCycle = () => {
+                    clearInterval(intervalId);
+                };
+
+                container.addEventListener('mouseenter', stopCycle);
+                container.addEventListener('mouseleave', startCycle);
+                
+                // Start the animation for this stack
+                startCycle();
+            });
+
+            // --- 6. DYNAMIC PARTICLE BACKGROUND ---
+            const canvas = document.getElementById('particle-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particlesArray;
+
+                const setCanvasSize = () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                };
+                setCanvasSize();
+
+                const mouse = { x: null, y: null, radius: 150 };
+
+                window.addEventListener('mousemove', (event) => {
+                    mouse.x = event.x;
+                    mouse.y = event.y;
+                });
+
+                class Particle {
+                    constructor(x, y, directionX, directionY, size, color) {
+                        this.x = x;
+                        this.y = y;
+                        this.directionX = directionX;
+                        this.directionY = directionY;
+                        this.size = size;
+                        this.color = color;
+                    }
+
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+
+                    update() {
+                        if (this.x > canvas.width || this.x < 0) {
+                            this.directionX = -this.directionX;
+                        }
+                        if (this.y > canvas.height || this.y < 0) {
+                            this.directionY = -this.directionY;
+                        }
+                        this.x += this.directionX;
+                        this.y += this.directionY;
+                        this.draw();
+                    }
+                }
+
+                function init() {
+                    particlesArray = [];
+                    let numberOfParticles = (canvas.height * canvas.width) / 12000;
+                    for (let i = 0; i < numberOfParticles; i++) {
+                        let size = (Math.random() * 1.5) + 1;
+                        let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                        let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                        let directionX = (Math.random() * .4) - .2;
+                        let directionY = (Math.random() * .4) - .2;
+                        let color = 'rgba(255, 255, 255, 0.4)';
+                        particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+                    }
+                }
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, innerWidth, innerHeight);
+                    for (let i = 0; i < particlesArray.length; i++) {
+                        particlesArray[i].update();
+                    }
+                    connect();
+                }
+
+                function connect() {
+                    let opacityValue = 1;
+                    for (let a = 0; a < particlesArray.length; a++) {
+                        for (let b = a; b < particlesArray.length; b++) {
+                            let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                            if (distance < (canvas.width / 8) * (canvas.height / 8)) {
+                                opacityValue = 1 - (distance / 20000);
+                                ctx.strokeStyle = `rgba(100, 116, 139, ${opacityValue})`;
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                                ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                window.addEventListener('resize', () => {
+                    setCanvasSize();
+                    init();
+                });
+
+                init();
+                animate();
+            }
+        });
+    </script>
+
+</body>
+</html>
+
+
